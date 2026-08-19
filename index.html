@@ -389,7 +389,7 @@
             "[STORE NAME}": "Retail_StoreName", // Support typos!
             "[CDA STORE NAME]": "ONCARetail_StoreName", // CDA Store mapping
             "[CDA STORE NAME}": "ONCARetail_StoreName", // Support typos!
-            "[FIRST NAME]": "first_name",
+            "[FIRST NAME]": "firstnameSL",
             "[LAST NAME]": "Last_Name",
             "[LOYALTY POINTS]": "ilp_total_active_pts_rewards",
             "[LOYALTY POINTS}": "ilp_total_active_pts_rewards"  // Support typos!
@@ -407,6 +407,12 @@
                     // Specific migration to update [FIRST NAME] to lowercase first_name
                     if (customMappings["[FIRST NAME]"] === "First_Name") {
                         customMappings["[FIRST NAME]"] = "first_name";
+                        saveMappings();
+                    }
+
+                    // Specific migration to update [FIRST NAME] from first_name to firstnameSL
+                    if (customMappings["[FIRST NAME]"] === "first_name") {
+                        customMappings["[FIRST NAME]"] = "firstnameSL";
                         saveMappings();
                     }
 
