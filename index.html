@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SFMC AMPscript Subject Line Generator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f5f7ff',
+                            100: '#ebf0ff',
+                            500: '#4f46e5',
+                            600: '#4338ca',
+                            700: '#3730a3',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .code-font {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+        .diff-added {
+            background-color: #def7ec;
+            color: #03543f;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            border-bottom: 2px solid #84e1bc;
+        }
+        .diff-removed {
+            background-color: #fde8e8;
+            color: #9b1c1c;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            border-bottom: 2px solid #f8b4b4;
+        }
+        .diff-equal {
+            padding: 0.125rem 0.25rem;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-brand-500 text-white p-2 rounded-lg shadow-md">
+                    <i data-lucide="mail" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-900 tracking-tight">AMPscript Subject Line Generator</h1>
+                    <p class="text-xs text-slate-500 font-medium">Salesforce Marketing Cloud Utility</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 text-sm text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full font-medium">
+                <i data-lucide="cpu" class="w-4 h-4 text-brand-500"></i>
+                <span>Client-Side Only (100% Secure)</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- LEFT COLUMN: INPUT & SETTINGS (6 cols) -->
+            <section class="lg:col-span-6 space-y-6">
+                
+                <!-- Quick Presets -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3 flex items-center">
+                        <i data-lucide="sparkles" class="w-4 h-4 mr-1.5 text-amber-500"></i> Quick Presets
+                    </h2>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="loadPreset('retail')" class="text-xs font-semibold bg-brand-50 hover:bg-brand-100 text-brand-700 px-3 py-2 rounded-lg border border-brand-100 transition duration-150">
+                            Store Location (US)
+                        </button>
+                        <button onclick="loadPreset('retail_cda')" class="text-xs font-semibold bg-brand-50 hover:bg-brand-100 text-brand-700 px-3 py-2 rounded-lg border border-brand-100 transition duration-150">
+                            Store Location (CDA / Canada)
+                        </button>
+                        <button onclick="loadPreset('firstname')" class="text-xs font-semibold bg-brand-50 hover:bg-brand-100 text-brand-700 px-3 py-2 rounded-lg border border-brand-100 transition duration-150">
+                            First Name Personalization
+                        </button>
+                        <button onclick="loadPreset('points')" class="text-xs font-semibold bg-brand-50 hover:bg-brand-100 text-brand-700 px-3 py-2 rounded-lg border border-brand-100 transition duration-150">
+                            Reward Points Balances
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Input Panel -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center">
+                        <i data-lucide="edit-3" class="w-5 h-5 mr-2 text-brand-500"></i> Subject Line Inputs
+                    </h2>
+                    
+                    <!-- Dynamic Input -->
+                    <div class="space-y-1.5">
+                        <label for="dynamic-input" class="block text-sm font-semibold text-slate-700 flex items-center justify-between">
+                            <span>Dynamic Subject Line</span>
+                            <span class="text-xs font-normal text-slate-400">Include placeholders like <code class="bg-slate-100 px-1 rounded">[STORE NAME]</code> or variables</span>
+                        </label>
+                        <textarea id="dynamic-input" rows="3" 
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-slate-800 transition code-font placeholder-slate-400"
+                            placeholder="❗ IMPORTANT: NEW spring styles at [STORE NAME]"></textarea>
+                    </div>
+
+                    <!-- Fallback Input -->
+                    <div class="space-y-1.5">
+                        <label for="fallback-input" class="block text-sm font-semibold text-slate-700 flex items-center justify-between">
+                            <span>Fallback Subject Line</span>
+                            <span class="text-xs font-normal text-slate-400">Used when the variable is empty/missing</span>
+                        </label>
+                        <textarea id="fallback-input" rows="3" 
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-slate-800 transition code-font placeholder-slate-400"
+                            placeholder="❗ IMPORTANT: NEW spring styles in-store"></textarea>
+                    </div>
+                </div>
+
+                <!-- NEW: Custom Placeholder Mapping Card -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center justify-between">
+                        <span class="flex items-center">
+                            <i data-lucide="hash" class="w-5 h-5 mr-2 text-indigo-500"></i> Copy Placeholder Mappings
+                        </span>
+                        <span class="text-[10px] text-slate-400 font-bold bg-slate-100 px-2 py-0.5 rounded-full uppercase tracking-wider">Saves Locally</span>
+                    </h2>
+                    
+                    <p class="text-xs text-slate-500">
+                        Map copywriting placeholders (e.g. <code class="bg-slate-100 px-1 rounded text-slate-600">[STORE NAME]</code>) to your real SFMC variable names. The generator remembers these and handles conversion automatically!
+                    </p>
+
+                    <!-- Add mapping form -->
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-2">
+                        <span class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Add Mapping Rule</span>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <input type="text" id="map-placeholder-input" placeholder="Copy Placeholder (e.g. [STORE NAME])"
+                                class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-brand-500 bg-white">
+                            <div class="flex items-center space-x-1.5">
+                                <input type="text" id="map-variable-input" placeholder="Variable Name (e.g. Retail_StoreName)"
+                                    class="flex-grow px-3 py-1.5 border border-slate-200 rounded-lg text-xs outline-none focus:ring-1 focus:ring-brand-500 bg-white">
+                                <button onclick="addMappingRule()" class="bg-brand-500 hover:bg-brand-600 text-white p-1.5 rounded-lg shadow-sm flex-shrink-0 transition">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mappings list -->
+                    <div class="space-y-1.5">
+                        <span class="block text-xs font-bold text-slate-600">Active Mappings:</span>
+                        <div id="mappings-list-container" class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                            <!-- Dynamic list of rules -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detected Variables & Configuration -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center">
+                        <i data-lucide="settings" class="w-5 h-5 mr-2 text-slate-500"></i> Variable Settings
+                    </h2>
+                    
+                    <div id="no-variables-msg" class="text-sm text-slate-500 bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-center">
+                        <i data-lucide="info" class="w-5 h-5 mr-2.5 text-slate-400 flex-shrink-0"></i>
+                        No variables detected. Add a placeholder in the Dynamic Subject Line (e.g. <code class="bg-slate-200 px-1 rounded">%%Store_Name%%</code>) or define a placeholder mapping above to generate AMPscript.
+                    </div>
+
+                    <div id="variables-container" class="hidden space-y-4">
+                        <p class="text-xs text-slate-500">
+                            We automatically extract variables. If multiple are present in a mismatch, we'll verify the primary variable below to evaluate the conditional block.
+                        </p>
+                        
+                        <div class="space-y-3">
+                            <label class="block text-sm font-semibold text-slate-700">Primary Conditional Variable</label>
+                            <select id="primary-var-select" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+                                <!-- Dynamic options -->
+                            </select>
+                        </div>
+
+                        <div>
+                            <span class="block text-sm font-semibold text-slate-700 mb-2">Detected Variables List</span>
+                            <div id="variables-list" class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                                <!-- Dynamic list -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Diff Visualization Panel -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h2 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2 flex items-center">
+                        <i data-lucide="split" class="w-4 h-4 mr-1.5 text-slate-400"></i> Visual Alignment Diff
+                    </h2>
+                    <div id="diff-visualization" class="p-4 bg-slate-50 border border-slate-200 rounded-xl min-h-[4rem] text-sm break-all font-medium leading-relaxed">
+                        <!-- Dynamic output -->
+                    </div>
+                    <div class="flex items-center space-x-4 text-xs font-semibold text-slate-500">
+                        <div class="flex items-center"><span class="w-3 h-3 bg-emerald-100 border-b-2 border-emerald-400 rounded mr-1.5"></span> Dynamic Part</div>
+                        <div class="flex items-center"><span class="w-3 h-3 bg-red-100 border-b-2 border-red-400 rounded mr-1.5"></span> Fallback Part</div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- RIGHT COLUMN: OUTPUT & SIMULATOR (6 cols) -->
+            <section class="lg:col-span-6 space-y-6">
+
+                <!-- Generated AMPscript Output Tabs -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                    
+                    <!-- Tabs Header -->
+                    <div class="bg-slate-50 border-b border-slate-200 flex px-4 pt-3 space-x-2">
+                        <button id="tab-inline-btn" onclick="switchTab('inline')" class="px-4 py-2 text-sm font-bold border-b-2 border-brand-500 text-brand-600 transition-all rounded-t-lg">
+                            Inline Subject Line
+                        </button>
+                        <button id="tab-block-btn" onclick="switchTab('block')" class="px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-all rounded-t-lg">
+                            Block AMPscript
+                        </button>
+                    </div>
+
+                    <!-- Tab Contents -->
+                    <div class="p-6 flex-grow flex flex-col space-y-4">
+                        
+                        <!-- Tab: Inline -->
+                        <div id="tab-inline-content" class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <p class="text-xs text-slate-500">
+                                    Paste this directly in the <strong>Subject Line field</strong> in Marketing Cloud.
+                                </p>
+                                <button onclick="copyToClipboard('inline-output')" class="flex items-center space-x-1 text-xs font-bold text-brand-600 hover:text-brand-700 focus:outline-none bg-brand-50 hover:bg-brand-100 px-2.5 py-1.5 rounded-lg border border-brand-100 transition">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                    <span>Copy Code</span>
+                                </button>
+                            </div>
+                            <div class="relative bg-slate-900 text-slate-100 p-4 rounded-xl border border-slate-800 overflow-x-auto select-all max-h-56">
+                                <pre id="inline-output" class="code-font text-xs whitespace-pre-wrap break-all"></pre>
+                            </div>
+                        </div>
+
+                        <!-- Tab: Block -->
+                        <div id="tab-block-content" class="hidden space-y-3">
+                            <div class="flex items-center justify-between">
+                                <p class="text-xs text-slate-500">
+                                    Paste this into an <strong>AMPscript block in your email body</strong>, and put <code class="bg-slate-100 px-1 py-0.5 rounded text-brand-600 code-font">%%=v(@subjectLine)=%%</code> in the subject line field.
+                                </p>
+                                <button onclick="copyToClipboard('block-output')" class="flex items-center space-x-1 text-xs font-bold text-brand-600 hover:text-brand-700 focus:outline-none bg-brand-50 hover:bg-brand-100 px-2.5 py-1.5 rounded-lg border border-brand-100 transition">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                    <span>Copy Code</span>
+                                </button>
+                            </div>
+                            <div class="relative bg-slate-900 text-slate-100 p-4 rounded-xl border border-slate-800 overflow-x-auto select-all max-h-64">
+                                <pre id="block-output" class="code-font text-xs whitespace-pre"></pre>
+                            </div>
+                        </div>
+
+                        <!-- General Toast Notification -->
+                        <div id="toast" class="hidden fixed bottom-6 right-6 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg items-center space-x-2 z-50 text-sm transition-all duration-300">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+                            <span id="toast-msg">Copied!</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inbox Preview & Simulator -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                    <h2 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center">
+                        <i data-lucide="eye" class="w-5 h-5 mr-2 text-brand-500"></i> Live Simulator & Inbox Preview
+                    </h2>
+
+                    <!-- Email Mockup Notification -->
+                    <div class="bg-slate-100 p-4 rounded-2xl border border-slate-200 max-w-md mx-auto shadow-inner">
+                        <div class="bg-white rounded-xl shadow p-4 border border-slate-200 flex items-start space-x-3 text-xs leading-normal">
+                            <!-- Logo / Initial -->
+                            <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                                YB
+                            </div>
+                            <!-- Email Headers -->
+                            <div class="flex-grow space-y-1 overflow-hidden">
+                                <div class="flex items-center justify-between text-[11px] text-slate-400">
+                                    <span id="preview-sender" class="font-bold text-slate-800">Your Brand</span>
+                                    <span>10:38 AM</span>
+                                </div>
+                                <div id="preview-subject" class="font-bold text-slate-900 text-sm truncate">
+                                    Subject line renders here...
+                                </div>
+                                <div id="preview-preheader" class="text-slate-500 truncate font-medium">
+                                    Snippet: Check out this week's special offers and new collections...
+                                </div>
+                            </div>
+                            <!-- Dot indicators -->
+                            <div class="w-2.5 h-2.5 bg-blue-600 rounded-full flex-shrink-0 mt-1"></div>
+                        </div>
+                    </div>
+
+                    <!-- Simulator Customizers -->
+                    <div class="space-y-4 pt-2">
+                        <h3 class="text-sm font-semibold text-slate-700 flex items-center">
+                            <i data-lucide="sliders" class="w-4 h-4 mr-1.5 text-slate-400"></i> Simulator Control Panel
+                        </h3>
+
+                        <!-- Sender / Preheader controls -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label for="sender-control" class="text-xs font-semibold text-slate-500">Sender Name</label>
+                                <input type="text" id="sender-control" value="Your Brand" 
+                                    class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs focus:ring-1 focus:ring-brand-500 outline-none">
+                            </div>
+                            <div class="space-y-1">
+                                <label for="preheader-control" class="text-xs font-semibold text-slate-500">Email Preheader</label>
+                                <input type="text" id="preheader-control" value="Snippet: Check out this week's special offers and new collections..." 
+                                    class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs focus:ring-1 focus:ring-brand-500 outline-none">
+                            </div>
+                        </div>
+
+                        <!-- Variable Inputs -->
+                        <div class="border-t border-slate-100 pt-4">
+                            <span class="block text-xs font-semibold text-slate-500 mb-2">Simulate Variable Send Values:</span>
+                            <div id="simulator-vars" class="space-y-3">
+                                <!-- Dynamic variable list with input fields -->
+                            </div>
+                            <div id="simulator-no-vars" class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                Enter variables in the subject line input above to enable simulations.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 font-medium">
+            AMPscript Subject Line Generator Tool &bull; Created for email production teams.
+        </div>
+    </footer>
+
+    <!-- App scripts -->
+    <script src="app.js"></script>
+    <script>
+        // UI Logic
+        let currentTab = 'inline';
+        const presets = {
+            retail: {
+                dynamic: "❗ IMPORTANT: NEW spring styles at [STORE NAME]",
+                fallback: "❗ IMPORTANT: NEW spring styles in-store",
+                note: "Note: Maps '[STORE NAME]' placeholder straight to @Retail_StoreName variable!"
+            },
+            retail_cda: {
+                dynamic: "❗ IMPORTANT: NEW spring styles at [CDA STORE NAME]",
+                fallback: "❗ IMPORTANT: NEW spring styles in-store",
+                note: "Note: Maps '[CDA STORE NAME]' placeholder straight to @ONCARetail_StoreName variable!"
+            },
+            firstname: {
+                dynamic: "Hey [FIRST NAME], look at these exclusive member rewards!",
+                fallback: "Hey friend, look at these exclusive member rewards!"
+            },
+            points: {
+                dynamic: "%%First_Name%%, you've got %%Points_Balance%% points! Claim your reward 🎁",
+                fallback: "Claim your rewards before they expire! 🎁"
+            }
+        };
+
+        // Default placeholder mapping rules
+        const DEFAULT_MAPPINGS = {
+            "[STORE NAME]": "Retail_StoreName",
+            "[STORE NAME}": "Retail_StoreName", // Support typos!
+            "[CDA STORE NAME]": "ONCARetail_StoreName", // CDA Store mapping
+            "[CDA STORE NAME}": "ONCARetail_StoreName", // Support typos!
+            "[FIRST NAME]": "first_name",
+            "[LAST NAME]": "Last_Name",
+            "[LOYALTY POINTS]": "Points_Balance"
+        };
+
+        let customMappings = {};
+
+        // Load mappings from localStorage or set defaults
+        function loadMappings() {
+            const stored = localStorage.getItem('ampscript_generator_mappings');
+            if (stored) {
+                try {
+                    customMappings = JSON.parse(stored);
+                    
+                    // Specific migration to update [FIRST NAME] to lowercase first_name
+                    if (customMappings["[FIRST NAME]"] === "First_Name") {
+                        customMappings["[FIRST NAME]"] = "first_name";
+                        saveMappings();
+                    }
+
+                    // Merge any missing defaults (e.g. if new defaults are added in update)
+                    let updated = false;
+                    for (const [key, val] of Object.entries(DEFAULT_MAPPINGS)) {
+                        if (customMappings[key] === undefined) {
+                            customMappings[key] = val;
+                            updated = true;
+                        }
+                    }
+                    if (updated) {
+                        saveMappings();
+                    }
+                } catch (e) {
+                    customMappings = { ...DEFAULT_MAPPINGS };
+                }
+            } else {
+                customMappings = { ...DEFAULT_MAPPINGS };
+                saveMappings();
+            }
+            renderMappingRules();
+        }
+
+        // Save mappings to localStorage
+        function saveMappings() {
+            localStorage.setItem('ampscript_generator_mappings', JSON.stringify(customMappings));
+        }
+
+        // Render mappings table
+        function renderMappingRules() {
+            const container = document.getElementById('mappings-list-container');
+            container.innerHTML = '';
+            
+            const entries = Object.entries(customMappings);
+            if (entries.length === 0) {
+                container.innerHTML = `<div class="text-xs italic text-slate-400 p-2">No mappings defined. Add one below!</div>`;
+                return;
+            }
+
+            entries.forEach(([key, val]) => {
+                const row = document.createElement('div');
+                row.className = "flex items-center justify-between text-xs bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg";
+                row.innerHTML = `
+                    <div class="flex items-center space-x-2 font-medium truncate flex-grow">
+                        <code class="bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-100 font-bold">${escapeHtml(key)}</code>
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-slate-400"></i>
+                        <span class="text-slate-700 font-semibold">@${escapeHtml(val)}</span>
+                    </div>
+                    <button onclick="deleteMappingRule('${escapeHtml(key)}')" class="text-slate-400 hover:text-red-500 p-1 flex-shrink-0 transition">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                `;
+                container.appendChild(row);
+            });
+            lucide.createIcons();
+        }
+
+        function addMappingRule() {
+            const placeholderInput = document.getElementById('map-placeholder-input');
+            const varInput = document.getElementById('map-variable-input');
+
+            const rawPlaceholder = placeholderInput.value.trim();
+            let rawVar = varInput.value.trim();
+
+            if (!rawPlaceholder || !rawVar) {
+                showToast("Please enter both a placeholder and a variable name.", true);
+                return;
+            }
+
+            // Clean up the variable name (remove leading '@' and restrict characters to valid var characters)
+            if (rawVar.startsWith('@')) {
+                rawVar = rawVar.substring(1);
+            }
+            rawVar = rawVar.replace(/[^a-zA-Z0-9_]/g, '');
+
+            if (!rawVar) {
+                showToast("Invalid variable name. Use alphanumeric characters and underscores only.", true);
+                return;
+            }
+
+            // Add mapping
+            customMappings[rawPlaceholder] = rawVar;
+            saveMappings();
+            renderMappingRules();
+
+            // Reset input fields
+            placeholderInput.value = '';
+            varInput.value = '';
+
+            showToast(`Mapped ${rawPlaceholder} to @${rawVar}`);
+            processInputs();
+        }
+
+        function deleteMappingRule(key) {
+            delete customMappings[key];
+            saveMappings();
+            renderMappingRules();
+            processInputs();
+            showToast("Mapping removed.");
+        }
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Custom preset loading that resolves to clean input
+        function loadPreset(key) {
+            const preset = presets[key];
+            document.getElementById('dynamic-input').value = preset.dynamic;
+            document.getElementById('fallback-input').value = preset.fallback;
+            processInputs();
+        }
+
+        // Handle tabs
+        function switchTab(tab) {
+            currentTab = tab;
+            const inlineBtn = document.getElementById('tab-inline-btn');
+            const blockBtn = document.getElementById('tab-block-btn');
+            const inlineContent = document.getElementById('tab-inline-content');
+            const blockContent = document.getElementById('tab-block-content');
+
+            if (tab === 'inline') {
+                inlineBtn.className = "px-4 py-2 text-sm font-bold border-b-2 border-brand-500 text-brand-600 transition-all rounded-t-lg";
+                blockBtn.className = "px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-all rounded-t-lg";
+                inlineContent.classList.remove('hidden');
+                blockContent.classList.add('hidden');
+            } else {
+                blockBtn.className = "px-4 py-2 text-sm font-bold border-b-2 border-brand-500 text-brand-600 transition-all rounded-t-lg";
+                inlineBtn.className = "px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-all rounded-t-lg";
+                blockContent.classList.remove('hidden');
+                inlineContent.classList.add('hidden');
+            }
+        }
+
+        // Copy outputs
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Copied to clipboard!");
+            }, (err) => {
+                showToast("Failed to copy code.", true);
+            });
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            toastMsg.textContent = message;
+            
+            if (isError) {
+                toast.classList.remove('bg-slate-900');
+                toast.classList.add('bg-red-600');
+            } else {
+                toast.classList.remove('bg-red-600');
+                toast.classList.add('bg-slate-900');
+            }
+
+            toast.classList.remove('hidden');
+            toast.classList.add('flex');
+
+            setTimeout(() => {
+                toast.classList.add('hidden');
+                toast.classList.remove('flex');
+            }, 3000);
+        }
+
+        // Main controller
+        let lastResult = null;
+        let simulatorVarValues = {};
+
+        function processInputs() {
+            const dynamicVal = document.getElementById('dynamic-input').value;
+            const fallbackVal = document.getElementById('fallback-input').value;
+
+            // Generate output passing current customMappings configuration
+            const selectedPrimaryOverride = document.getElementById('primary-var-select')?.value || null;
+            const result = AmpscriptGenerator.generateAmpscript(dynamicVal, fallbackVal, customMappings, selectedPrimaryOverride);
+            lastResult = result;
+
+            // Update outputs
+            document.getElementById('inline-output').textContent = result.inline;
+            document.getElementById('block-output').textContent = result.block;
+
+            // Update visual diff
+            renderDiffVisualization(result.diffParts);
+
+            // Handle variables
+            const varsContainer = document.getElementById('variables-container');
+            const noVarsMsg = document.getElementById('no-variables-msg');
+            const varsList = document.getElementById('variables-list');
+            const primarySelect = document.getElementById('primary-var-select');
+
+            if (result.variables.length > 0) {
+                varsContainer.classList.remove('hidden');
+                noVarsMsg.classList.add('hidden');
+
+                // Update primary select options
+                const prevPrimary = primarySelect.value || result.primaryVar;
+                primarySelect.innerHTML = '';
+                result.variables.forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v;
+                    opt.textContent = `@${v}`;
+                    if (v === prevPrimary) opt.selected = true;
+                    primarySelect.appendChild(opt);
+                });
+
+                // Update list
+                varsList.innerHTML = '';
+                result.variables.forEach(v => {
+                    const div = document.createElement('div');
+                    div.className = "flex items-center space-x-2 text-xs font-semibold bg-slate-100 text-slate-700 px-2.5 py-1.5 rounded-lg border border-slate-200";
+                    div.innerHTML = `
+                        <i data-lucide="variable" class="w-3.5 h-3.5 text-slate-400"></i>
+                        <span>@${v}</span>
+                        <span class="text-[10px] text-slate-400 font-normal ml-auto">AttributeValue("${v}")</span>
+                    `;
+                    varsList.appendChild(div);
+                });
+
+                // Update simulator controls
+                updateSimulatorControls(result.variables);
+            } else {
+                varsContainer.classList.add('hidden');
+                noVarsMsg.classList.remove('hidden');
+                document.getElementById('simulator-vars').innerHTML = '';
+                document.getElementById('simulator-no-vars').classList.remove('hidden');
+                
+                // Clear simulator values
+                simulatorVarValues = {};
+                updatePreviewSubject();
+            }
+
+            lucide.createIcons();
+        }
+
+        // Render aligned diff in the visualizer card
+        function renderDiffVisualization(parts) {
+            const container = document.getElementById('diff-visualization');
+            container.innerHTML = '';
+
+            if (parts.length === 0) {
+                container.textContent = "Start typing dynamic and fallback versions to see alignment...";
+                return;
+            }
+
+            parts.forEach(part => {
+                const span = document.createElement('span');
+                if (part.type === 'equal') {
+                    span.className = "diff-equal";
+                    span.textContent = part.value;
+                } else if (part.type === 'mismatch') {
+                    if (part.dynamic) {
+                        const dynSpan = document.createElement('span');
+                        dynSpan.className = "diff-added";
+                        dynSpan.textContent = part.dynamic;
+                        container.appendChild(dynSpan);
+                    }
+                    if (part.fallback) {
+                        const falSpan = document.createElement('span');
+                        falSpan.className = "diff-removed";
+                        falSpan.textContent = part.fallback;
+                        container.appendChild(falSpan);
+                    }
+                    return;
+                }
+                container.appendChild(span);
+            });
+        }
+
+        // Populate and sync the simulator control inputs
+        function updateSimulatorControls(variables) {
+            const container = document.getElementById('simulator-vars');
+            const noVars = document.getElementById('simulator-no-vars');
+            container.innerHTML = '';
+            noVars.classList.add('hidden');
+
+            const newValues = {};
+
+            variables.forEach(v => {
+                newValues[v] = simulatorVarValues[v] !== undefined ? simulatorVarValues[v] : '';
+                
+                const div = document.createElement('div');
+                div.className = "flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-3";
+                div.innerHTML = `
+                    <label class="sm:w-1/3 text-xs font-bold text-slate-600 truncate flex items-center">
+                        <span class="w-2 h-2 bg-brand-500 rounded-full mr-1.5"></span>
+                        @${v}
+                    </label>
+                    <div class="flex-grow flex items-center space-x-2">
+                        <input type="text" id="sim-input-${v}" value="${newValues[v]}" 
+                            placeholder="Enter test value..."
+                            class="flex-grow px-3 py-1.5 border border-slate-200 rounded-lg text-xs focus:ring-1 focus:ring-brand-500 outline-none code-font"
+                            oninput="updateSimulatorValue('${v}', this.value)">
+                        <button onclick="clearSimulatorValue('${v}')" class="text-slate-400 hover:text-red-500 p-1">
+                            <i data-lucide="delete" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+            simulatorVarValues = newValues;
+            updatePreviewSubject();
+        }
+
+        function updateSimulatorValue(varName, value) {
+            simulatorVarValues[varName] = value;
+            updatePreviewSubject();
+        }
+
+        function clearSimulatorValue(varName) {
+            simulatorVarValues[varName] = '';
+            const input = document.getElementById(`sim-input-${varName}`);
+            if (input) input.value = '';
+            updatePreviewSubject();
+        }
+
+        // Compile subject line for mock inbox preview card
+        function updatePreviewSubject() {
+            const subjectPreview = document.getElementById('preview-subject');
+            if (!lastResult) {
+                subjectPreview.textContent = 'Subject line renders here...';
+                return;
+            }
+
+            const primaryVar = document.getElementById('primary-var-select')?.value || lastResult.primaryVar;
+            const compiled = AmpscriptGenerator.simulateSubjectLine(lastResult.diffParts, simulatorVarValues, primaryVar, customMappings);
+            
+            subjectPreview.textContent = compiled || '(Empty Subject Line)';
+        }
+
+        // Attach static preview handlers
+        document.getElementById('sender-control').addEventListener('input', (e) => {
+            document.getElementById('preview-sender').textContent = e.target.value || 'Your Brand';
+        });
+
+        document.getElementById('preheader-control').addEventListener('input', (e) => {
+            document.getElementById('preview-preheader').textContent = e.target.value || '';
+        });
+
+        // Initialize listeners
+        document.getElementById('dynamic-input').addEventListener('input', processInputs);
+        document.getElementById('fallback-input').addEventListener('input', processInputs);
+        document.getElementById('primary-var-select').addEventListener('change', processInputs);
+
+        // Load mappings and then process presets
+        window.addEventListener('DOMContentLoaded', () => {
+            loadMappings();
+            loadPreset('retail');
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
