@@ -378,7 +378,7 @@
                 fallback: "Hey friend, look at these exclusive member rewards!"
             },
             points: {
-                dynamic: "%%First_Name%%, you've got %%Points_Balance%% points! Claim your reward 🎁",
+                dynamic: "[FIRST NAME], you've got [LOYALTY POINTS] points! Claim your reward 🎁",
                 fallback: "Claim your rewards before they expire! 🎁"
             }
         };
@@ -391,7 +391,8 @@
             "[CDA STORE NAME}": "ONCARetail_StoreName", // Support typos!
             "[FIRST NAME]": "first_name",
             "[LAST NAME]": "Last_Name",
-            "[LOYALTY POINTS]": "Points_Balance"
+            "[LOYALTY POINTS]": "ilp_total_active_pts_rewards",
+            "[LOYALTY POINTS}": "ilp_total_active_pts_rewards"  // Support typos!
         };
 
         let customMappings = {};
@@ -406,6 +407,13 @@
                     // Specific migration to update [FIRST NAME] to lowercase first_name
                     if (customMappings["[FIRST NAME]"] === "First_Name") {
                         customMappings["[FIRST NAME]"] = "first_name";
+                        saveMappings();
+                    }
+
+                    // Specific migration to update [LOYALTY POINTS] to new variable name
+                    if (customMappings["[LOYALTY POINTS]"] === "Points_Balance") {
+                        customMappings["[LOYALTY POINTS]"] = "ilp_total_active_pts_rewards";
+                        customMappings["[LOYALTY POINTS}"] = "ilp_total_active_pts_rewards";
                         saveMappings();
                     }
 
