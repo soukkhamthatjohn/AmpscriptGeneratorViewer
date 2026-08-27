@@ -276,10 +276,13 @@ function generateAmpscript(dynamicSL, fallbackSL, customMappings = {}, primaryVa
             const segmentVars = extractVariables(part.dynamic, customMappings);
             const checkVar = segmentVars.length > 0 ? segmentVars[0] : primaryVar;
 
-            const formattedDynamic = formatDynamicSegmentInline(part.dynamic, segmentVars, customMappings);
-            const formattedFallback = part.fallback;
+            const dynamicArgs = parseSegmentToConcatArgs(part.dynamic, segmentVars, customMappings);
+            const fallbackArgs = part.fallback ? [`"${escapeAmpscriptString(part.fallback)}"`] : [];
 
-            inlineResult += `%%[if not Empty(@${checkVar}) then]%%${formattedDynamic}%%[else]%%${formattedFallback}%%[endif]%%`;
+            const dynamicConcatStr = dynamicArgs.length === 1 ? dynamicArgs[0] : `Concat(${dynamicArgs.join(', ')})`;
+            const fallbackStr = fallbackArgs.length > 0 ? fallbackArgs[0] : '""';
+
+            inlineResult += `%%=Iif(not Empty(@${checkVar}), ${dynamicConcatStr}, ${fallbackStr})=%%`;
         }
     });
 

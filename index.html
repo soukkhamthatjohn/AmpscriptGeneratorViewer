@@ -389,7 +389,8 @@
             "[STORE NAME}": "Retail_StoreName", // Support typos!
             "[CDA STORE NAME]": "ONCARetail_StoreName", // CDA Store mapping
             "[CDA STORE NAME}": "ONCARetail_StoreName", // Support typos!
-            "[FIRST NAME]": "firstnameSL",
+            "[FIRST NAME]": "firstNameSL",
+            "[FIRST NAME}": "firstNameSL", // Support typos!
             "[LAST NAME]": "Last_Name",
             "[LOYALTY POINTS]": "ilp_total_active_pts_rewards",
             "[LOYALTY POINTS}": "ilp_total_active_pts_rewards"  // Support typos!
@@ -404,15 +405,10 @@
                 try {
                     customMappings = JSON.parse(stored);
                     
-                    // Specific migration to update [FIRST NAME] to lowercase first_name
-                    if (customMappings["[FIRST NAME]"] === "First_Name") {
-                        customMappings["[FIRST NAME]"] = "first_name";
-                        saveMappings();
-                    }
-
-                    // Specific migration to update [FIRST NAME] from first_name to firstnameSL
-                    if (customMappings["[FIRST NAME]"] === "first_name") {
-                        customMappings["[FIRST NAME]"] = "firstnameSL";
+                    // Specific migration to update [FIRST NAME] to firstNameSL
+                    if (customMappings["[FIRST NAME]"] === "First_Name" || customMappings["[FIRST NAME]"] === "first_name") {
+                        customMappings["[FIRST NAME]"] = "firstNameSL";
+                        customMappings["[FIRST NAME}"] = "firstNameSL";
                         saveMappings();
                     }
 
